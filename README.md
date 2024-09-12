@@ -23,6 +23,7 @@ Deploying as a .jar
 
 ![image](https://github.com/user-attachments/assets/bfab6c79-3b24-4c69-8ccc-7f0456376014)
 
+
 *********************************************************************************************************************************************************************************
 
 Still need to Accomplish:
@@ -39,3 +40,40 @@ Still need to Accomplish:
 
 
 *********************************************************************************************************************************************************************************
+When Ready to Deploy:
+
+https://hostingtutorials.dev/blog/free-spring-boot-host-with-render
+
+or try:
+
+
+    Heroku
+
+    Render
+
+    DigitalOcean App Platform
+
+    Platform Sh
+
+    Google App Engine
+
+    Azure App Service
+
+    Netlify
+
+    AWS Elastic Beanstalk
+
+    Red Hat OpenShift
+
+    Engine Yard
+
+    Firebase
+
+*********************************************************************************************************************************************************************************
+Additional Resources:
+
+https://vaadin.com/docs/latest/components - For database and component use
+
+https://start.spring.io/ - Create a Spring Framework Project
+
+	
