@@ -1,0 +1,43 @@
+@import url('./main-layout.css');
+@import url('./views/gridwith-filters-view.css');
+
+/* valencia color pallet */
+:root {
+    --lumo-primary-color: #BF311A;
+    --lumo-darker-color: #992614;
+    --lumo-secondary-color: #FDB913;
+    --vaadin-selection-color-text: #FDB913;
+    --lumo-error-color: #FF3333;
+    --lumo-success-color: #33FF33;
+    --lumo-base-color: #FFFFFF;
+    --text-muted-K40: #DCDDDE;
+    --K60: #A7A9AC;
+    --K80: #58595B;
+}
+
+/* sidenav selection colors */
+html, :host {
+    --lumo-primary-color: hsl(0, 0%, 100%);
+    --lumo-primary-color-50pct: hsl(0, 0%, 100%, 0.5);
+    --lumo-primary-color-10pct: hsl(0, 0%, 100%, 0.1);
+}
+
+.button {
+    color: white; /* Text color */
+    background-color: var(--lumo-primary-color);
+    border-color: var(--lumo-primary-color);
+}
+
+.button2 {
+    color: white; /* Text color */
+    background-color: var(--lumo-darker-color);
+    border-color: var(--lumo-primary-color);
+}
+
+.button[disabled] {
+    color: var(--K80); /* Text color */
+    background-color: var(--K60);
+    border-color: var(--lumo-primary-color);
+}
+
+@import url('./views/errors.css');

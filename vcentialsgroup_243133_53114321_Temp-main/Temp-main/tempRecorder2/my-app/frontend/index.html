@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body, #outlet {
+      height: 100vh;
+      width: 100%;
+      margin: 0;
+    }
+  </style>
+  <!-- Include necessary libraries for PDF, CSV, and Excel generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+</head>
+<body>
+<div id="outlet"></div>
+<script>
+  function getCurrentDateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+  }
+
+  // Function to generate and download a standard PDF file based on HTML content
+  async function generateAndDownloadPDF(htmlContent) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+
+    const parser = new DOMParser();
+    const docContent = parser.parseFromString(htmlContent, 'text/html');
+    const table = docContent.querySelector('table');
+    const title = docContent.querySelector('h1').textContent;
+
+    if (!table) {
+      console.error("No table found in the HTML content");
+      return;
+    }
+
+    const headers = Array.from(table.querySelectorAll('th')).map(header => header.textContent);
+    const rows = Array.from(table.querySelectorAll('tr')).slice(1).map(row =>
+            Array.from(row.querySelectorAll('td')).map(cell => cell.textContent)
+    );
+
+    // Add title to the PDF and center it
+    const pageWidth = doc.internal.pageSize.width || doc.internal.pageSize.getWidth();
+    const titleX = pageWidth / 2 - doc.getTextWidth(title) / 2;
+    doc.text(title, titleX, 15);
+
+    // Add table to the PDF
+    doc.autoTable({
+      startY: 20, // Add space below the title
+      head: [headers],
+      body: rows,
+      theme: 'grid',
+      styles: {
+        font: 'helvetica',
+        fontSize: 10,
+        cellPadding: 2,
+        lineColor: [169, 27, 46], // Valencia Red line color
+        lineWidth: 0.1, // Custom line width
+        valign: 'middle', // Vertical alignment
+        halign: 'center', // Horizontal alignment
+      },
+      headStyles: {
+        fillColor: [169, 27, 46],  // Valencia Red header background color
+        textColor: [255, 255, 255],  // White header text color
+        fontStyle: 'bold',  // Custom font style
+      },
+      bodyStyles: {
+        fillColor: [245, 245, 245], // Light grey body background color
+        textColor: [44, 62, 80], // Dark grey body text color
+      },
+      alternateRowStyles: {
+        fillColor: [255, 255, 255] // White alternate row background color
+      },
+      didDrawPage: function (data) {
+        // Add page number
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(10);
+        const pageText = `Page ${pageCount}`;
+        const pageSize = doc.internal.pageSize;
+        const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+        doc.text(pageText, data.settings.margin.left, pageHeight - 10);
+      }
+    });
+
+    const dateTimeCode = getCurrentDateTime();
+    doc.save(`data_${dateTimeCode}.pdf`);
+  }
+
+  // Function to generate and download a report-specific PDF file based on HTML content
+  async function generateAndDownloadReportPDF(htmlContent, title) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+
+    const parser = new DOMParser();
+    const docContent = parser.parseFromString(htmlContent, 'text/html');
+    const container = docContent.querySelector('.container');
+
+    if (!container) {
+      console.error("No content found in the HTML");
+      return;
+    }
+
+    const headers = ["Location", "Date", "Room", "Machine Name", "Min Temp", "Max Temp", "Mean Temp", "Unsafe Temp", "Outliers"];
+    const rows = [];
+
+    container.querySelectorAll('h2, h3, h4, table').forEach(element => {
+      if (element.tagName === 'H2') {
+        const location = element.textContent.split(": ")[1];
+        rows.push([location, "", "", "", "", "", "", "", ""]);
+      } else if (element.tagName === 'H3') {
+        const date = element.textContent.split(": ")[1];
+        rows.push(["", date, "", "", "", "", "", "", ""]);
+      } else if (element.tagName === 'H4') {
+        const room = element.textContent.split(": ")[1];
+        rows.push(["", "", room, "", "", "", "", "", ""]);
+      } else if (element.tagName === 'TABLE') {
+        element.querySelectorAll('tr').forEach((row, rowIndex) => {
+          if (rowIndex > 0) {
+            const cells = Array.from(row.querySelectorAll('td')).map(cell => cell.textContent);
+            rows.push(["", "", "", ...cells]);
+          }
+        });
+      }
+    });
+
+    // Add title to the PDF and center it
+    const pageWidth = doc.internal.pageSize.width || doc.internal.pageSize.getWidth();
+    const titleX = pageWidth / 2 - doc.getTextWidth(title) / 2;
+    doc.text(title, titleX, 15);
+
+    // Add table to the PDF
+    doc.autoTable({
+      startY: 20, // Add space below the title
+      head: [headers],
+      body: rows,
+      theme: 'grid',
+      styles: {
+        font: 'helvetica',
+        fontSize: 10,
+        cellPadding: 2,
+        lineColor: [169, 27, 46], // Valencia Red line color
+        lineWidth: 0.1, // Custom line width
+        valign: 'middle', // Vertical alignment
+        halign: 'center', // Horizontal alignment
+      },
+      headStyles: {
+        fillColor: [169, 27, 46],  // Valencia Red header background color
+        textColor: [255, 255, 255],  // White header text color
+        fontStyle: 'bold',  // Custom font style
+      },
+      bodyStyles: {
+        fillColor: [245, 245, 245], // Light grey body background color
+        textColor: [44, 62, 80], // Dark grey body text color
+      },
+      alternateRowStyles: {
+        fillColor: [255, 255, 255] // White alternate row background color
+      },
+      didDrawPage: function (data) {
+        // Add page number
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(10);
+        const pageText = `Page ${pageCount}`;
+        const pageSize = doc.internal.pageSize;
+        const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+        doc.text(pageText, data.settings.margin.left, pageHeight - 10);
+      }
+    });
+
+    const dateTimeCode = getCurrentDateTime();
+    doc.save(`report_${dateTimeCode}.pdf`);
+  }
+
+  // Function to generate and download a CSV file based on JSON data
+  function generateAndDownloadCSV(jsonData, title) {
+    const records = JSON.parse(jsonData);
+    const csv = Papa.unparse(records);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateTimeCode = getCurrentDateTime();
+    a.href = url;
+    a.download = `data_${dateTimeCode}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Function to generate and download an Excel file based on JSON data
+  function generateAndDownloadExcel(jsonData, title) {
+    const records = JSON.parse(jsonData);
+    const worksheet = XLSX.utils.json_to_sheet(records);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
+
+    // Adjust column widths
+    const columnWidths = [];
+    const headerKeys = Object.keys(records[0]);
+    for (let i = 0; i < headerKeys.length; i++) {
+      const maxLength = Math.max(
+              ...records.map(record => record[headerKeys[i]].toString().length),
+              headerKeys[i].length
+      );
+      columnWidths.push({ wch: maxLength + 2 }); // Add some extra width for padding
+    }
+    worksheet['!cols'] = columnWidths;
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateTimeCode = getCurrentDateTime();
+    a.href = url;
+    a.download = `data_${dateTimeCode}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Function to open a print window with HTML content
+  function openPrintWindow(htmlContent) {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.open();
+    printWindow.document.write('<html><head><title>Print Preview</title></head><body>');
+    printWindow.document.write(htmlContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  }
+</script>
+</body>
+</html>

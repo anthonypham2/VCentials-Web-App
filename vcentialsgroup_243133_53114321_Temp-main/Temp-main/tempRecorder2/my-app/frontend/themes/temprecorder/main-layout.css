@@ -1,0 +1,86 @@
+
+vaadin-scroller[slot="drawer"] {
+  padding: var(--lumo-space-s);
+}
+
+vaadin-side-nav-item vaadin-icon {
+  padding: 0;
+  color: var(--text-muted-K40);
+}
+
+[slot="drawer"]:is(header, footer) {
+  display: flex;
+  align-items: center;
+  gap: var(--lumo-space-s);
+  padding: var(--lumo-space-s) var(--lumo-space-m);
+  min-height: var(--lumo-size-xl);
+  box-sizing: border-box;
+}
+
+[slot="drawer"]:is(header, footer):is(:empty) {
+  display: none;
+}
+
+/* drawer title text color*/
+[slot="drawer"] {
+  background-color: var(--lumo-darker-color);
+  color: var(--lumo-base-color);
+  border: 0;
+}
+
+/* top navbar text color */
+[slot="navbar"]{
+  color: var(--lumo-base-color);
+}
+
+/* sidenav on-hover icon (not needed, but here if anyone wants it)
+vaadin-side-nav-item[current]:hover > vaadin-icon {
+  color: var(--lumo-secondary-color);
+}
+*/
+
+/* sidenav icon color */
+vaadin-side-nav-item[current] > vaadin-icon {
+  color: var(--lumo-base-color);
+}
+
+/* sidenav on-hover */
+vaadin-side-nav-item::part(link):hover {
+  color: var(--lumo-secondary-color);
+}
+
+/* sidenav text color unselected */
+vaadin-side-nav-item::part(link) {
+  color: var(--text-muted-K40);
+}
+
+/* sidenav item selected text color */
+vaadin-side-nav-item[current]::part(link){
+  color: var(--lumo-base-color);
+}
+
+/* top navbar background color */
+vaadin-app-layout::part(navbar) {
+  background-color: var(--lumo-primary-color);
+  border: 0;
+}
+
+/* remove drawer gap */
+vaadin-app-layout::part(drawer) {
+  border: 0;
+}
+
+/* padding around the input boxes */
+vaadin-form-layout {
+  padding-top: 15px;
+  padding-right: 15px;
+  padding-bottom: 15px;
+  padding-left: 15px;
+}
+
+/* padding for the save/cancel buttons on the grid view */
+vaadin-horizontal-layout {
+  padding-left: 15px !important;
+  padding-right: 15px !important;
+}
+
