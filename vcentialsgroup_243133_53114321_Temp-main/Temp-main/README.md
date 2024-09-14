@@ -1,8 +1,59 @@
 How to install & Run on client side
 
 1) Install Maven (https://maven.apache.org/install.html)
+
+2) You'll need to create a Firebase Project and enable Firebase Authentication (refer to their docs). 
+The ./serviceAccountKey.json file needs to exist and contain your app credentials (or change the behaviour in FirebaseService) and you need to replace the Web/JS firebaseConfig with your Firebase web config in ./frontend/login.ts file.
+
+<details>
+<summary>Firebase Guide</summary>
+
+You can set up **everything via the Firebase Console (GUI)**. This includes generating the **Service Account credentials** for the backend (Firebase Admin SDK) and configuring the **Firebase Web SDK** for the frontend. Here's how you can do each part using the Firebase Console.
+
+### 1. **Generate Firebase Service Account Credentials via the Firebase Console (GUI)**
+
+You can generate the `serviceAccountKey.json` file that contains your Firebase app credentials for the backend (Firebase Admin SDK) via the Firebase Console:
+
+- **Steps**:
+    1. Go to the [Firebase Console](https://console.firebase.google.com/).
+    2. Select your Firebase project.
+    3. In the **Project Settings**, go to the **Service accounts** tab.
+    4. Click **Generate new private key**.
+    5. This will download a `serviceAccountKey.json` file, which contains your app credentials. You can use this file in your backend to authenticate with Firebase.
+
+- **Direct Link**:
+    - [Firebase Console: Service Accounts](https://console.firebase.google.com/u/0/project/_/settings/serviceaccounts/adminsdk)
+
+- **Documentation**:
+    - [Generate Firebase Admin SDK Credentials](https://firebase.google.com/docs/admin/setup#initialize-sdk)
+
+### 2. **Find and Configure Firebase Web SDK via the Firebase Console (GUI)**
+
+You can configure your web app frontend (Firebase Web SDK) by getting the `firebaseConfig` from the Firebase Console.
+
+- **Steps**:
+    1. Go to the [Firebase Console](https://console.firebase.google.com/).
+    2. Select your project.
+    3. Click on the **Project settings** (gear icon in the upper left).
+    4. Under **Your apps**, find your Web app or create a new one by clicking **Add app** → **Web**.
+    5. After creating or selecting your Web app, Firebase will display the **firebaseConfig** object. This is what you need to copy and use in the `./frontend/login.ts` file.
+
+- **Direct Link**:
+    - [Firebase Console: Project Settings](https://console.firebase.google.com/u/0/project/_/settings/general)
+
+- **Documentation**:
+    - [Set up Firebase in Web Apps](https://firebase.google.com/docs/web/setup)
+
+---
+
+### Everything in the GUI Summary:
+
+- You can **generate the `serviceAccountKey.json`** file for your backend Firebase Admin SDK using the **Firebase Console Service Accounts** tab.
+- You can find and configure the **Firebase Web SDK** by creating a web app in the **Firebase Console Project Settings**.
+</details>
  
 ![image](https://github.com/user-attachments/assets/f7c7e8a9-473f-49fc-a57c-7db83094cecc)
+
 
 
 *********************************************************************************************************************************************************************************
