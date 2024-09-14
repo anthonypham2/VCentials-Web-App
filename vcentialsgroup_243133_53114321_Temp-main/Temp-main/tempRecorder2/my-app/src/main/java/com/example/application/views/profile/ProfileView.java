@@ -29,6 +29,7 @@ import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.application.data.UserInfoRepository;
 import com.example.application.security.SecurityService;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -59,9 +60,13 @@ public class ProfileView extends VerticalLayout {
     }
 
     private void createProfileView() {
-        UserDetails userDetails = securityService.getAuthenticatedUser();
+        var userDetails = securityService.getAuthentication();
+        if(userDetails.isEmpty()){
+            System.err.println("No userDetails provided!");
+            return;
+        }
         //makes sure that a valid user is authenticated before loading the profile view
-        UserInfo userInfo = userInfoRepository.findByUsername(userDetails.getUsername());
+        UserInfo userInfo = userInfoRepository.findByUsername(userDetails.get().getName());
         getData(userInfo);
         toggleEditing(userInfo);
 

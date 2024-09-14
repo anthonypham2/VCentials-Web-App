@@ -3,7 +3,6 @@ package com.example.application.views.registration;
 import com.example.application.data.Authorities;
 import com.example.application.data.AuthoritiesRepository;
 import com.example.application.services.UserInfoService;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.*;
@@ -22,8 +21,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.regex.Pattern;
 
 @Route("register")
 @PageTitle("Registration")
@@ -105,37 +102,39 @@ public class RegisterView extends VerticalLayout {
         String passwordValue = passwordField.getValue();
         String encodedPassword = passwordEncoder.encode(passwordValue);
 
-        //makes sure a unique username/email is entered
-        if (checkForExistingAccount(usernameValue,emailValue,vcidValue)) {
-            UserInfo newUser = new UserInfo();
-            Authorities newAuthority = new Authorities();
+        if (isDuplicate(usernameValue,emailValue,vcidValue)) return;
 
-            newUser.setUsername(usernameValue);
-            newUser.setEmail(emailValue);  // Set email
-            newUser.setPassword(encodedPassword);
-            newUser.setEmail(emailValue);
-            newUser.setVcid(vcidValue);
-            newUser.setEnabled(true);
-            newAuthority.setUsername(usernameValue);
-            newAuthority.setAuthority("ROLE_USER");
+        // Redirect to the backend URL that initiates Firebase login
+        getUI().ifPresent(ui -> ui.getPage().setLocation("/api/auth/google"));
 
-            // Print debug information to console
-            System.out.println("Registering user: " + usernameValue + " with email: " + emailValue + " and password: " + passwordValue);
-            System.out.println("Encoded password: " + encodedPassword);
+        UserInfo newUser = new UserInfo();
+        Authorities newAuthority = new Authorities();
 
-            // Save new user and authority to the database
-            userInfoRepository.save(newUser);
-            authoritiesRepository.save(newAuthority);
+        newUser.setUsername(usernameValue);
+        newUser.setEmail(emailValue);  // Set email
+        newUser.setPassword(encodedPassword);
+        newUser.setEmail(emailValue);
+        newUser.setVcid(vcidValue);
+        newUser.setEnabled(true);
+        newAuthority.setUsername(usernameValue);
+        newAuthority.setAuthority("ROLE_USER");
 
-            // Show success notification
-            Notification.show("New account created successfully!");
+        // Print debug information to console
+        System.out.println("Registering user: " + usernameValue + " with email: " + emailValue + " and password: " + passwordValue);
+        System.out.println("Encoded password: " + encodedPassword);
 
-            // Clear input fields
-            clearFields();
+        // Save new user and authority to the database
+        userInfoRepository.save(newUser);
+        authoritiesRepository.save(newAuthority);
 
-            // Navigate to the login page
-            UI.getCurrent().navigate(LoginView.class);
-        }
+        // Show success notification
+        Notification.show("New account created successfully!");
+
+        // Clear input fields
+        clearFields();
+
+        // Navigate to the login page
+        UI.getCurrent().navigate(LoginView.class);
     }
 
     // Method to validate user input
@@ -144,20 +143,20 @@ public class RegisterView extends VerticalLayout {
     }
 
     //checks if the username or email already exists
-    private boolean checkForExistingAccount(String username,String email,String vcid){
+    private boolean isDuplicate(String username, String email, String vcid){
         if (userInfoRepository.existsByUsername(username)){
             Notification.show("Account with that username already exists!");
-            return false;
+            return true;
         }
         if (userInfoRepository.existsByEmail(email)){
             Notification.show("Account with that email already exists!");
-            return false;
+            return true;
         }
         if (userInfoRepository.existsByVcid(vcid)){
             Notification.show("Account with that VCID already exists!");
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     // Method to clear input fields after registration
