@@ -22,9 +22,10 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-@Route("register")
-@PageTitle("Registration")
+//@Route("register")
+//@PageTitle("Registration")
 @AnonymousAllowed
+@Deprecated(since = "User details are not stored locally anymore, instead Firebase is used.", forRemoval = true)
 public class RegisterView extends VerticalLayout {
 
     // Define UI components for user input
@@ -58,7 +59,7 @@ public class RegisterView extends VerticalLayout {
 
 
         // Add UI components to the layout
-        add(new H1("Create an Account"), usernameField, emailField,vcidField ,passwordField,confirmPasswordField ,registerButton);
+        add(new H1("Create an Account"), usernameField, emailField,vcidField ,passwordField,confirmPasswordField, registerButton);
 
         usernameField.setRequired(true);
         usernameField.setInvalid(true);
