@@ -4,7 +4,7 @@ import com.google.firebase.auth.FirebaseToken;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -13,7 +13,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Component;
 
 @Component
-public class SecurityService {
+public class AuthenticatedUser {
 
     public Optional<Authentication> getAuthentication() {
         SecurityContext context = SecurityContextHolder.getContext();

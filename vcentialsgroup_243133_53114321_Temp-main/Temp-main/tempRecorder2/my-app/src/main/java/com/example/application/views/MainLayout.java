@@ -1,19 +1,19 @@
 package com.example.application.views;
 
-import com.example.application.security.SecurityService;
+import com.example.application.security.Auth;
+import com.example.application.security.AuthenticatedUser;
 import com.example.application.views.about.AboutView;
 
 import com.example.application.views.admin.AdminView;
 import com.example.application.views.home.HomeView;
 //import com.example.application.views.Metrics.MetricsView;
 import com.example.application.views.profile.ProfileView;
-import com.example.application.views.settings.SettingsView;
+import com.google.firebase.auth.FirebaseToken;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
@@ -21,12 +21,13 @@ import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.spring.VaadinApplicationConfiguration;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.vaadin.lineawesome.LineAwesomeIcon;
+
+import java.util.Optional;
 
 /**
  * The main view is a top-level placeholder for other views.
@@ -36,13 +37,11 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     private H1 viewTitle;
 
-    private final SecurityService securityService;
+    private final AuthenticatedUser authenticatedUser;
 
-    private final transient AuthenticationContext authContext;
 
-    public MainLayout(@Autowired SecurityService securityService,AuthenticationContext authContext) {
-        this.securityService = securityService;
-        this.authContext = authContext;
+    public MainLayout(@Autowired AuthenticatedUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
         addHeaderContent();
@@ -50,7 +49,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     private HorizontalLayout addLogoutButton(){
         HorizontalLayout header;
-        Button logout = new Button("Logout", click -> securityService.logout());
+        Button logout = new Button("Logout", click -> authenticatedUser.logout());
         logout.setPrefixComponent(VaadinIcon.SIGN_OUT.create());
         logout.addClassName("button2");
         header = new HorizontalLayout(logout);
@@ -97,14 +96,9 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     // Add admin page only if admin user is logged in
     private void addAdmin(SideNav nav){
-        authContext.getAuthenticatedUser(UserDetails.class).ifPresent(user -> {
-            boolean isAdmin = user.getAuthorities().stream()
-                    .anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
-            if (isAdmin) {
-                nav.addItem(new SideNavItem("Admin", AdminView.class, LineAwesomeIcon.CHESS_BOARD_SOLID.create()));
-            }
-        });
-
+        if(Auth.isAdmin(authenticatedUser)){
+            nav.addItem(new SideNavItem("Admin", AdminView.class, LineAwesomeIcon.CHESS_BOARD_SOLID.create()));
+        }
     }
 
 
@@ -130,10 +124,10 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     @Override
     public void beforeEnter(BeforeEnterEvent e){
         if(e.getLocation().getPath().isEmpty()){
-            e.forwardTo("");
+            //e.forwardTo("");
         }
-        if (authContext == null){
-            e.forwardTo("");
+        if (authenticatedUser == null || authenticatedUser.get().isEmpty()){
+            //e.forwardTo("");
         }
     }
 }

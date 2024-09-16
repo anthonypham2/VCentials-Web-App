@@ -2,36 +2,21 @@ package com.example.application.views.profile;
 
 import com.example.application.data.UserInfo;
 import com.example.application.views.MainLayout;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
-import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.textfield.TextFieldBase;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.converter.StringToIntegerConverter;
-import com.vaadin.flow.data.validator.EmailValidator;
-import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.application.data.UserInfoRepository;
-import com.example.application.security.SecurityService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.example.application.security.AuthenticatedUser;
 
 @PermitAll
 @Route(value = "profile", layout = MainLayout.class)
@@ -39,7 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class ProfileView extends VerticalLayout {
 
     private final UserInfoRepository userInfoRepository;
-    private final SecurityService securityService;
+    private final AuthenticatedUser authenticatedUser;
 
     private TextField usernameField = new TextField("Username");
     private EmailField emailField = new EmailField("Email",event -> isValid());
@@ -52,15 +37,15 @@ public class ProfileView extends VerticalLayout {
     private Boolean isEditing = true;
 
     @Autowired
-    public ProfileView(UserInfoRepository userInfoRepository, SecurityService securityService) {
+    public ProfileView(UserInfoRepository userInfoRepository, AuthenticatedUser authenticatedUser) {
         this.userInfoRepository = userInfoRepository;
-        this.securityService = securityService;
+        this.authenticatedUser = authenticatedUser;
 
         createProfileView();
     }
 
     private void createProfileView() {
-        var userDetails = securityService.getAuthentication();
+        var userDetails = authenticatedUser.getAuthentication();
         if(userDetails.isEmpty()){
             System.err.println("No userDetails provided!");
             return;

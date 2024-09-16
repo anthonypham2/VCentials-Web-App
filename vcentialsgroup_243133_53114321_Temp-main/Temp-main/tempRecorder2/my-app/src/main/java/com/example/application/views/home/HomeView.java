@@ -1,9 +1,12 @@
 package com.example.application.views.home;
 
 import com.example.application.data.*;
+import com.example.application.security.Auth;
+import com.example.application.security.AuthenticatedUser;
 import com.example.application.services.*;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -90,7 +93,7 @@ public class HomeView extends Div {
     private final Button deleteButton = new Button("Delete Data", e -> openDeleteDialog());
     private final Button previewButton = new Button("Export Data", e -> previewData());
 
-    private final BeanValidationBinder<DataEntries> dataEntriesBeanValidationBinder;
+    private BeanValidationBinder<DataEntries> dataEntriesBeanValidationBinder;
 
     private DataEntries dataEntries;
 
@@ -107,11 +110,13 @@ public class HomeView extends Div {
     private final RecordServices recordServices;
     private final SharedGridDataService sharedGridDataService;
 
-    private final transient AuthenticationContext authContext;
+    private final transient AuthenticatedUser authenticatedUser;
 
-    public HomeView(DataEntriesService dataEntriesService, LocationsService locationsService, RoomsService roomsService, MachinesService machinesService, UserInfoService userInfoService, RecordServices recordServices, SharedGridDataService sharedGridDataService, AuthenticationContext authContext) {
+    public HomeView(DataEntriesService dataEntriesService, LocationsService locationsService, RoomsService roomsService,
+                    MachinesService machinesService, UserInfoService userInfoService, RecordServices recordServices,
+                    SharedGridDataService sharedGridDataService, AuthenticatedUser authenticatedUser) {
 
-        this.authContext = authContext;
+        this.authenticatedUser = authenticatedUser;
         this.dataEntriesService = dataEntriesService;
         this.locationsService = locationsService;
         this.roomsService = roomsService;
@@ -119,6 +124,11 @@ public class HomeView extends Div {
         this.userInfoService = userInfoService;
         this.recordServices = recordServices;
         this.sharedGridDataService = sharedGridDataService;
+
+        if(Auth.isNotLoggedIn(authenticatedUser)){
+            add(new Text("Not logged in!"));
+            return;
+        }
 
         grid.setSelectionMode(Grid.SelectionMode.MULTI);
         GridMultiSelectionModel<RecordDTO> selectionModel = (GridMultiSelectionModel<RecordDTO>)grid.getSelectionModel();
@@ -131,18 +141,13 @@ public class HomeView extends Div {
         grid.addSelectionListener(event -> itemSelected());
 
         //enables the ability to delete records if the current user account is an admin
-        authContext.getAuthenticatedUser(UserDetails.class).ifPresent(user -> {
-            boolean isAdmin = user.getAuthorities().stream()
-                    .anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
-            if (isAdmin) {
-                deleteButton.setPrefixComponent(VaadinIcon.TRASH.create());
-                deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-                add(deleteButton);
-            }
-            else {
-                deleteButton.setVisible(false);
-            }
-        });
+        if(Auth.isAdmin(authenticatedUser)){
+            deleteButton.setPrefixComponent(VaadinIcon.TRASH.create());
+            deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+            add(deleteButton);
+        } else{
+            deleteButton.setVisible(false);
+        }
 
         previewButton.setPrefixComponent(VaadinIcon.PRINT.create());
         add(previewButton);
@@ -168,13 +173,11 @@ public class HomeView extends Div {
 
         add(splitLayout);
 
-        //Checks if the user exists
-        //If not, then redirect to login page
         try {
-            userInfoComboBox.setValue(userInfoService.getUsername(SecurityContextHolder.getContext().getAuthentication().getName()));
+            userInfoComboBox.setValue(userInfoService.getUsername(authenticatedUser.getAuthentication().get().getName()));
         }
         catch (EmptyResultDataAccessException e){
-            UI.getCurrent().getPage().setLocation("login");
+            //UI.getCurrent().getPage().setLocation("login");
         }
 
         // Configure Grid
