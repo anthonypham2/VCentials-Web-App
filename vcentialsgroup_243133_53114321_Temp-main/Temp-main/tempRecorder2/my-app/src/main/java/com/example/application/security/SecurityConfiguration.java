@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -15,7 +16,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 public class SecurityConfiguration extends VaadinWebSecurity {
 
-    public static final String LOGOUT_URL = "/";
+    public static final String LOGOUT_URL = "/login";
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -47,6 +48,11 @@ public class SecurityConfiguration extends VaadinWebSecurity {
         // Disable CSRF and frame options for development purposes (customize as needed)
         http.csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
+        http
+                .sessionManagement(settings -> {
+                    settings.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+                    settings.invalidSessionUrl(LOGOUT_URL);
+                });
     }
 
     @Override
